@@ -1,16 +1,23 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
-
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as apigateway from "aws-cdk-lib/aws-apigateway";
 export class KnowItAll3000Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const discordInteractions = new lambda.Function(this, "Interaction", {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "interactions.handler",
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'KnowItAll3000Queue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const api = new apigateway.LambdaRestApi(this, "DiscordApi", {
+      handler: discordInteractions,
+      proxy: false,
+    });
+
+    const interact = api.root.addResource('interactions');
+    interact.addMethod('GET')
   }
 }
